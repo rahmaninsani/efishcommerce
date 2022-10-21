@@ -1,0 +1,41 @@
+version: "3.9"
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:latest
+    container_name: postgres-database
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - DATABASE_HOST=${DB_HOST}
+    ports:
+      - ${DB_PORT}:${DB_PORT}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - golang-postgres-network
+
+  # Golang App
+  app:
+    container_name: golang-app
+    build: .
+    ports:
+      - ${APP_PORT}:${APP_PORT}
+    restart: on-failure
+    volumes:
+      - golang-data:/usr/src/app/
+    depends_on:
+      - postgres
+    networks:
+      - golang-postgres-network
+
+# Volumes
+volumes:
+  postgres-data:
+  golang-data:
+
+# Network
+networks:
+  golang-postgres-network:
+    driver: bridge
